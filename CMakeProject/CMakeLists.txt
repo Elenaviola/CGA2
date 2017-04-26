@@ -141,8 +141,8 @@ endif()
 #sources and headers
 
 #framework
-set(FW_SOURCES "${CMAKE_SOURCE_DIR}/framework/GameWindow.cpp" "${CMAKE_SOURCE_DIR}/framework/glerror.cpp" "${CMAKE_SOURCE_DIR}/framework/Input.cpp")
-set(FW_HEADERS "${CMAKE_SOURCE_DIR}/framework/GameWindow.h" "${CMAKE_SOURCE_DIR}/framework/glerror.h" "${CMAKE_SOURCE_DIR}/framework/Input.h" "${CMAKE_SOURCE_DIR}/framework/libheaders.h")
+set(FW_SOURCES "${CMAKE_SOURCE_DIR}/framework/GameWindow.cpp" "${CMAKE_SOURCE_DIR}/framework/glerror.cpp" "${CMAKE_SOURCE_DIR}/framework/Input.cpp" "${CMAKE_SOURCE_DIR}/framework/OBJLoader.cpp")
+set(FW_HEADERS "${CMAKE_SOURCE_DIR}/framework/GameWindow.h" "${CMAKE_SOURCE_DIR}/framework/glerror.h" "${CMAKE_SOURCE_DIR}/framework/Input.h" "${CMAKE_SOURCE_DIR}/framework/libheaders.h" "${CMAKE_SOURCE_DIR}/framework/OBJLoader.h")
 set(FW_INCLUDES "${CMAKE_SOURCE_DIR}/framework")
 
 #sources and headers from src directory
