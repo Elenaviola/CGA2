@@ -19,6 +19,11 @@ set(LIB_LINKS "")
 # LIB_SOURCE_ONLY_FILES : Library source files to be added to the project without linking
 set(LIB_SOURCE_ONLY_FILES "")
 
+# optional lib includes
+
+set(INCLUDE_SOIL_LIB ON CACHE BOOL "Include SOIL library")
+set(INCLUDE_ASSIMP_LIB OFF CAHCE BOOL "Include AssImp library")
+
 # ------------------------------------------------- GLFW ----------------------------------------------------
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw-3.2.1")
@@ -118,6 +123,18 @@ endif()
 # ----------------------------------------------- GLM -------------------------------------------------------
 
 list(APPEND LIB_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm-0.9.8.4/glm" "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm-0.9.8.4/glm/glm")
+
+# ---------------------------------------------- SOIL ---------------------------------------------------------
+
+if(INCLUDE_SOIL_LIB)
+	find_library(SOIL_LIBRARY NAMES libSOIL PATHS "${CMAKE_CURRENT_SOURCE_DIR}/libs/soil/lib" NO_DEFAULT_PATH)
+	if(SOIL_LIBRARY)
+		list(APPEND LIB_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/libs/soil/include")
+		list(APPEND LIB_LINKS ${SOIL_LIBRARY})
+	else()
+		message(FATAL_ERROR "SOIL not found")
+	endif()
+endif()
 
 # ---------------------------------------------- PROJECT SOURCES -----------------------------------------------
 
