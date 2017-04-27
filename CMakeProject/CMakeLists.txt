@@ -231,3 +231,8 @@ if(MSVC)
 	#startup project DOES NOT WORK CURRENTLY
 	#set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJ_NAME})
 endif()
+
+#----------------------------------------- LANGUAGE LEVEL REQUIREMENTS --------------------------------------------------------------------
+
+# force c++11 for main project
+set_target_properties(${PROJ_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON CXX_STANDARD 11)
