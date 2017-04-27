@@ -100,11 +100,11 @@ if(TARGET glew_s)
 endif(TARGET glew_s)
 
 if(TARGET glewinfo)
-	set_target_properties(glewinfo PROPERTIES FOLDER libs/glew EXCLUDE_FROM_ALL 1)
+	set_target_properties(glewinfo PROPERTIES FOLDER libs/glew)
 endif(TARGET glewinfo)
 
 if(TARGET visualinfo)
-	set_target_properties(visualinfo PROPERTIES FOLDER libs/glew EXCLUDE_FROM_ALL 1)
+	set_target_properties(visualinfo PROPERTIES FOLDER libs/glew)
 endif(TARGET visualinfo)
 
 # ----------------------------------------------- OPENGL AND GLU (IF NOT INCLUDED BY GLEW) ------------------------
