@@ -8,7 +8,7 @@
 class Game : public GameWindow
 {
 public:
-	Game::Game();
+	Game();
 	~Game();
 
 	void init() override;
