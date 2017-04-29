@@ -16,7 +16,7 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath, bool calcnormals, bool
 	OBJResult result;
 	try
 	{
-		std::ifstream stream(objpath, std::ios_base::in);
+		std::ifstream stream(objpath, std::ios_base::in | std::ios_base::binary);
 		stream.exceptions(std::ifstream::badbit);
 		std::string command = "";
 		while (istreamhelper::peekString(stream, command))
