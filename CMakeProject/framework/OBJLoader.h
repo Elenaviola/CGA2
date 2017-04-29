@@ -257,7 +257,7 @@ public:
 private:
 	//parsing helpers
 	//o flag
-	static OBJObject parseObject(std::ifstream& stream, bool calcnormals = false, bool calctangents = false);
+	static OBJObject parseObject(DataCache& cache, std::ifstream& stream, bool calcnormals = false, bool calctangents = false);
 	//v per o
 	static glm::vec3 parsePosition(std::ifstream& stream);
 	//vn per o

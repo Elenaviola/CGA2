@@ -19,11 +19,16 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath, bool calcnormals, bool
 		std::ifstream stream(objpath, std::ios_base::in | std::ios_base::binary);
 		stream.exceptions(std::ifstream::badbit);
 		std::string command = "";
+		DataCache cache;
 		while (istreamhelper::peekString(stream, command))
 		{			
 			if (command == "o")
 			{
-				result.objects.push_back(parseObject(stream, calcnormals, calctangents));
+				result.objects.push_back(parseObject(cache, stream, calcnormals, calctangents));
+			}
+			else if (command == "v" || command == "vt" || command == "vn" || command == "g" || command == "f") //no object. parse whole obj file into one object
+			{
+				result.objects.push_back(parseObject(cache, stream, calcnormals, calctangents));
 			}
 			else
 			{				
@@ -40,24 +45,26 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath, bool calcnormals, bool
 	}
 }
 
-OBJObject OBJLoader::parseObject(std::ifstream & stream, bool calcnormals, bool calctangents)
+OBJObject OBJLoader::parseObject(DataCache& cache, std::ifstream & stream, bool calcnormals, bool calctangents)
 {
 	try
 	{
 		OBJObject object;
 		std::string command;
-		DataCache cache;
 
 		//get object name
 		if (!(stream >> command))
 			throw std::exception("Error parsing object.");
 
-		if (command != "o")
-			throw std::exception("Error parsing object.");
-
-		if (!(stream >> object.name))
-			throw std::exception("Error parsing object name.");
-
+		if (command == "o")
+		{
+			if (!(stream >> object.name))
+				throw std::exception("Error parsing object name.");
+		}
+		else
+		{
+			object.name = "UNNAMED";
+		}
 
 		while (istreamhelper::peekString(stream, command))
 		{
