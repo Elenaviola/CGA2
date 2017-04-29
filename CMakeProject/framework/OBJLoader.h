@@ -6,15 +6,42 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <cctype>
+#include <unordered_map>
 
 //------------------------------ istream string helper ----------------------------------------
 
 class istreamhelper
 {
 public:
-	static bool readToNextDelim(std::istream& stream, std::string& out, const std::vector<char>& delimiters);
-	static std::vector<std::string> splitString(const std::string& in, const std::vector<char>& delimiters);
 	static bool peekString(std::istream& stream, std::string& out);
+	template <typename T>
+	static bool peek(std::istream& stream, T& out)
+	{
+		try
+		{
+			if (stream.eof())
+			{
+				return false;
+			}
+			auto spos = stream.tellg();
+			if (stream >> out)
+			{
+				stream.seekg(spos);
+				return true;
+			}
+			else
+			{
+				if (!stream.eof())
+					stream.seekg(spos);
+				return false;
+			}
+		}
+		catch (std::exception ex)
+		{
+			throw ex;
+		}
+	}
 };
 
 //------------------------------ Data Structures to hold the result ---------------------------
@@ -119,7 +146,6 @@ public:
 	std::vector<OBJObject> objects;
 };
 
-
 class OBJLoader
 {
 private:
@@ -129,27 +155,55 @@ private:
 public:
 	static OBJResult loadOBJ(const std::string& objpath);
 
-private:
-	typedef struct DataCache
+	class DataCache
 	{
+	public:
 		std::vector<glm::vec3> positions;
 		std::vector<glm::vec2> uvs;
 		std::vector<glm::vec3> normals;
-	} DataCache;
+	};
 
-	typedef struct RawVertex
+	class VertexDef
 	{
+	public:
 		//if -1: undefined
-		int p_idx;
-		int uv_idx;
-		int n_idx;
+		int p_idx = -1;
+		int uv_idx = -1;
+		int n_idx = -1;
+
+		class hash
+		{
+		public:
+			std::hash<int> h;
+			size_t operator()(const VertexDef& vd) const
+			{
+				size_t seed = 0;				
+				seed ^= h(vd.p_idx) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+				seed ^= h(vd.uv_idx) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+				seed ^= h(vd.n_idx) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+				return seed;
+			}
+			//seed ^= hash_value(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		};
+
+		class equal_to
+		{
+		public:
+			bool operator()(const VertexDef& vd1, const VertexDef& vd2) const
+			{
+				return (vd1.p_idx == vd2.p_idx && vd1.uv_idx == vd2.uv_idx && vd1.n_idx == vd2.n_idx);
+			}
+		};
+		
 	};
 
-	typedef struct Face
+	class Face
 	{
-		std::vector<RawVertex> verts;
+	public:
+		std::vector<VertexDef> verts;
 	};
 
+private:
 	//parsing helpers
 	//o flag
 	static OBJObject parseObject(std::ifstream& stream);	
@@ -167,12 +221,20 @@ private:
 	//parse face and generate vertices and indices for the mesh
 	static Face parseFace(std::ifstream& stream);
 
-	static RawVertex parseVertex(std::ifstream& stream);
+	//create Vertex from "v/vt/vn" strings
+	static VertexDef parseVertex(const std::string& vstring);
+
+	//fill mesh
+	static void fillMesh(OBJMesh& mesh, DataCache& cache, std::vector<VertexDef> vdefs, std::vector<Index>& indices);
+
+
 
 public:
 	//post processing
-	static void generateNormals(OBJMesh& mesh);
-	static void generateTangents(OBJMesh& mesh);
+	static void recalculateNormals(OBJMesh& mesh);
+	static void recalculateTangents(OBJMesh& mesh);
 };
+
+
 
 #endif

@@ -17,7 +17,7 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath)
 	try
 	{
 		std::ifstream stream(objpath, std::ios_base::in);
-		stream.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+		stream.exceptions(std::ifstream::badbit);
 		std::string command = "";
 		while (istreamhelper::peekString(stream, command))
 		{			
@@ -30,6 +30,7 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath)
 				stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			}
 		}
+		result.objname = objpath;
 		return result;
 	}
 	catch (std::exception ex)
@@ -95,9 +96,15 @@ OBJObject OBJLoader::parseObject(std::ifstream & stream)
 			{
 				stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			}
-
 		} //eof reached. model should be complete
-		return object;
+		if (stream.eof())
+		{
+			return object;
+		}
+		else
+		{
+			throw std::exception("Error parsing object. Read failed before end of file.");
+		}
 	}
 	catch (std::exception ex)
 	{
@@ -163,11 +170,76 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream)
 {
 	try
 	{
-		
+		OBJMesh mesh;
+		std::unordered_map<VertexDef, int, VertexDef::hash, VertexDef::equal_to> meshvertset; //collect distinct vertices
+
+		//later create actual vertices out of these and put them into the mesh
+		std::vector<VertexDef> meshverts; //for tracking order of insertion		
+		std::vector<Index> meshindices;	//vertex index of one of the vertex defs above
+
+		std::string command;
+		if (!(istreamhelper::peekString(stream, command)))
+		{
+			throw std::exception("Error parsing mesh.");
+		}
+
+		if (command == "g") //if we have a grouped mesh extract its name first
+		{
+			if (!(stream >> command >> mesh.name))
+			{
+				throw std::exception("Error parsing mesh.");
+			}
+		}
+		else
+		{
+			mesh.name = "UNGROUPED";
+		}
+
+		//now process faces
+		while (istreamhelper::peekString(stream, command))
+		{
+			if (command == "f") //yay we found a face
+			{
+				Face face = parseFace(stream);
+				//process face data and build mesh
+				for (int i = 0; i < 3; i++)
+				{
+					//add vertexdefs and indices
+					auto it = meshvertset.find(face.verts[i]);
+					if (it != meshvertset.end())	//if vertex def exists already, just get the index and push it onto index array
+					{
+						meshindices.push_back(it->second);
+					}
+					else //if not, push a index pointing to the last pushed vertex def, push vertex def and insert it into the set
+					{
+						meshindices.push_back(meshverts.size());
+						meshverts.push_back(face.verts[i]);
+						meshvertset.insert(std::make_pair(face.verts[i], meshverts.size() - 1));
+					}					
+				}
+			}
+			else if (command == "g" || command == "o") //found next mesh group
+			{
+				fillMesh(mesh, cache, meshverts, meshindices);
+				return mesh;
+			}
+			else
+			{
+				stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			}
+		}
+		if (stream.eof())
+		{
+			fillMesh(mesh, cache, meshverts, meshindices);
+			return mesh;
+		}
+		else
+		{
+			throw std::exception("Error parsing mesh. Read failed before end of file.");
+		}
 	}
 	catch (std::exception ex)
-	{
-
+	{ 
 		throw ex;
 	}
 }
@@ -176,50 +248,131 @@ OBJLoader::Face OBJLoader::parseFace(std::ifstream & stream)
 {
 	try
 	{
-		
+		std::string command;
+		Face face;
+		if ((stream >> command) && command == "f")
+		{
+			std::string vstr1, vstr2, vstr3;
+			if (stream >> vstr1 >> vstr2 >> vstr3)
+			{
+				face.verts.push_back(parseVertex(vstr1));
+				face.verts.push_back(parseVertex(vstr2));
+				face.verts.push_back(parseVertex(vstr3));
+				return face;
+			}
+			else
+			{
+				throw std::exception("Error parsing face");
+			}
+		}
+		else
+		{
+			throw std::exception("Error parsing face");
+		}
 	}
 	catch (std::exception ex)
 	{
-
 		throw ex;
 	}
 }
 
-OBJLoader::RawVertex OBJLoader::parseVertex(std::ifstream & stream)
+OBJLoader::VertexDef OBJLoader::parseVertex(const std::string& vstring)
 {
 	try
 	{
-		
+		//buffer for v, vt, vn index
+		std::string att[3];
+
+		int attct = 0;
+
+		for (int i = 0; i < vstring.length(); i++)
+		{
+			if (isdigit(vstring[i]))
+			{
+				att[attct] += vstring[i];
+			}
+			else if (vstring[i] == '/')
+			{
+				attct++;
+			}
+			else
+			{
+				throw std::exception("Error parsing vertex.");
+			}
+		}
+
+		VertexDef vert = {
+			(att[0].length() > 0 ? std::stoi(att[0]) - 1 : -1),
+			(att[1].length() > 0 ? std::stoi(att[1]) - 1 : -1),
+			(att[2].length() > 0 ? std::stoi(att[2]) - 1 : -1)
+		};
+		return vert;
 	}
 	catch (std::exception ex)
 	{
-
 		throw ex;
 	}
 }
 
-void OBJLoader::generateNormals(OBJMesh & mesh)
+void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDef> vdefs, std::vector<Index>& indices)
+{
+	//assemble the mesh from the collected indices
+	//create vertex from cache data
+	bool hasverts = true;
+	bool hasuvs = true;
+	bool hasnormals = true;
+	for (int i = 0; i < vdefs.size(); i++)
+	{
+		Vertex vert;
+
+		if (vdefs[i].p_idx == -1)
+			hasverts = false;
+
+		if (vdefs[i].uv_idx == -1)
+			hasuvs = false;
+
+		if (vdefs[i].n_idx == -1)
+			hasnormals = false;
+
+		if (vdefs[i].p_idx > -1 && vdefs[i].p_idx < cache.positions.size())
+			vert.position = cache.positions[vdefs[i].p_idx];
+		else
+			throw std::exception("Missing position in object definition");
+
+		if (vdefs[i].uv_idx > -1 && vdefs[i].uv_idx < cache.uvs.size())
+			vert.uv = cache.uvs[vdefs[i].uv_idx];
+		else
+			throw std::exception("Missing texture coordinate in object definition");
+
+		if (vdefs[i].n_idx > -1 && vdefs[i].n_idx < cache.normals.size())
+			vert.normal = cache.normals[vdefs[i].n_idx];
+		else
+			throw std::exception("Missing normal in object definition");
+
+		mesh.vertices.push_back(vert);
+	}
+	mesh.indices = std::move(indices);	
+	mesh.hasPositions = hasverts;	
+	mesh.hasUVs = hasuvs;	
+	mesh.hasNormals = hasnormals;
+}
+
+void OBJLoader::recalculateNormals(OBJMesh & mesh)
 {
 }
 
-void OBJLoader::generateTangents(OBJMesh & mesh)
+void OBJLoader::recalculateTangents(OBJMesh & mesh)
 {
 }
 
-bool istreamhelper::readToNextDelim(std::istream & stream, std::string & out, const std::vector<char>& delimiters)
-{
-	return false;
-}
-
-std::vector<std::string> istreamhelper::splitString(const std::string & in, const std::vector<char>& delimiters)
-{
-	return std::vector<std::string>();
-}
-
-bool istreamhelper::peekString(std::istream & stream, std::string& out)
+bool istreamhelper::peekString(std::istream& stream, std::string& out)
 {
 	try
 	{
+		if (stream.eof())
+		{
+			return false;
+		}
 		auto spos = stream.tellg();
 		if (stream >> out)
 		{
@@ -228,7 +381,8 @@ bool istreamhelper::peekString(std::istream & stream, std::string& out)
 		}
 		else
 		{
-			stream.seekg(spos);
+			if(!stream.eof())
+				stream.seekg(spos);
 			return false;
 		}
 	}
