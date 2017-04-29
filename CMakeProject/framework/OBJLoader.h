@@ -81,6 +81,8 @@ public:
 
 	OBJMesh& operator=(const OBJMesh& other)
 	{
+		if (this == &other)
+			return *this;
 		this->name = other.name;
 		this->hasPositions = other.hasPositions;
 		this->hasUVs = other.hasUVs;
@@ -88,9 +90,13 @@ public:
 		this->hasTangents = other.hasTangents;
 		this->vertices = other.vertices;
 		this->indices = other.indices;
+
+		return *this;
 	}
 	OBJMesh& operator=(OBJMesh&& other)
 	{
+		if (this == &other)
+			return *this;
 		this->name = std::move(other.name);
 		this->hasPositions = other.hasPositions;
 		this->hasUVs = other.hasUVs;
@@ -98,6 +104,8 @@ public:
 		this->hasTangents = other.hasTangents;
 		this->vertices = std::move(other.vertices);
 		this->indices = std::move(other.indices);
+
+		return *this;
 	}
 
 	bool hasPositions;
@@ -127,9 +135,23 @@ public:
 
 	OBJObject& operator=(const OBJObject& other)
 	{
+		if (this == &other)
+			return *this;
+
+		this->name = other.name;
+		this->meshes = other.meshes;
+
+		return *this;
 	}
 	OBJObject& operator=(OBJObject&& other)
 	{
+		if (this == &other)
+			return *this;
+
+		this->name = std::move(other.name);
+		this->meshes = std::move(other.meshes);
+
+		return *this;
 	}
 
 	std::string name;
@@ -140,7 +162,36 @@ class OBJResult
 {
 public:
 	OBJResult() {}
+	OBJResult(const OBJResult& other) :
+		objname(other.objname),
+		objects(other.objects)
+	{}
+	OBJResult(OBJResult&& other) :
+		objname(std::move(other.objname)),
+		objects(std::move(other.objects))
+	{}
 	~OBJResult() {}
+
+	OBJResult& operator=(const OBJResult& other)
+	{
+		if (this == &other)
+			return *this;
+
+		this->objname = other.objname;
+		this->objects = other.objects;
+
+		return *this;
+	}
+	OBJResult& operator=(OBJResult&& other)
+	{
+		if (this == &other)
+			return *this;
+
+		this->objname = std::move(other.objname);
+		this->objects = std::move(other.objects);
+
+		return *this;
+	}
 
 	std::string objname;
 	std::vector<OBJObject> objects;
