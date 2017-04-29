@@ -11,7 +11,7 @@ OBJLoader::~OBJLoader()
 {
 }
 
-OBJResult OBJLoader::loadOBJ(const std::string & objpath)
+OBJResult OBJLoader::loadOBJ(const std::string & objpath, bool calcnormals, bool calctangents)
 {
 	OBJResult result;
 	try
@@ -23,7 +23,7 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath)
 		{			
 			if (command == "o")
 			{
-				result.objects.push_back(parseObject(stream));
+				result.objects.push_back(parseObject(stream, calcnormals, calctangents));
 			}
 			else
 			{				
@@ -40,7 +40,7 @@ OBJResult OBJLoader::loadOBJ(const std::string & objpath)
 	}
 }
 
-OBJObject OBJLoader::parseObject(std::ifstream & stream)
+OBJObject OBJLoader::parseObject(std::ifstream & stream, bool calcnormals, bool calctangents)
 {
 	try
 	{
@@ -76,15 +76,10 @@ OBJObject OBJLoader::parseObject(std::ifstream & stream)
 			}
 
 			//meshes, groups and faces
-			else if (command == "g") //grouped mesh
+			else if (command == "g" || command == "f") //grouped or ungrouped mesh
 			{
-				object.meshes.push_back(parseMesh(cache, stream));
+				object.meshes.push_back(parseMesh(cache, stream, calcnormals, calctangents));
 			}
-			else if (command == "f") //no mesh groups
-			{
-				object.meshes.push_back(parseMesh(cache, stream));
-			}
-
 			//stop condition
 			else if (command == "o") //next object found
 			{
@@ -166,7 +161,7 @@ glm::vec2 OBJLoader::parseUV(std::ifstream & stream)
 	}
 }
 
-OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream)
+OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream, bool calcnormals, bool calctangents)
 {
 	try
 	{
@@ -221,6 +216,10 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream)
 			else if (command == "g" || command == "o") //found next mesh group
 			{
 				fillMesh(mesh, cache, meshverts, meshindices);
+				if (calcnormals)
+					recalculateNormals(mesh);
+				if (calctangents)
+					recalculateTangents(mesh);
 				return mesh;
 			}
 			else
@@ -231,6 +230,10 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream)
 		if (stream.eof())
 		{
 			fillMesh(mesh, cache, meshverts, meshindices);
+			if (calcnormals)
+				recalculateNormals(mesh);
+			if (calctangents)
+				recalculateTangents(mesh);
 			return mesh;
 		}
 		else
@@ -285,7 +288,7 @@ OBJLoader::VertexDef OBJLoader::parseVertex(const std::string& vstring)
 
 		int attct = 0;
 
-		for (int i = 0; i < vstring.length(); i++)
+		for (size_t i = 0; i < vstring.length(); i++)
 		{
 			if (isdigit(vstring[i]))
 			{
@@ -321,7 +324,7 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 	bool hasverts = true;
 	bool hasuvs = true;
 	bool hasnormals = true;
-	for (int i = 0; i < vdefs.size(); i++)
+	for (size_t i = 0; i < vdefs.size(); i++)
 	{
 		Vertex vert;
 
@@ -334,17 +337,17 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 		if (vdefs[i].n_idx == -1)
 			hasnormals = false;
 
-		if (vdefs[i].p_idx > -1 && vdefs[i].p_idx < cache.positions.size())
+		if (vdefs[i].p_idx > -1 && vdefs[i].p_idx < static_cast<int>(cache.positions.size()))
 			vert.position = cache.positions[vdefs[i].p_idx];
 		else
 			throw std::exception("Missing position in object definition");
 
-		if (vdefs[i].uv_idx > -1 && vdefs[i].uv_idx < cache.uvs.size())
+		if (vdefs[i].uv_idx > -1 && vdefs[i].uv_idx < static_cast<int>(cache.uvs.size()))
 			vert.uv = cache.uvs[vdefs[i].uv_idx];
 		else
 			throw std::exception("Missing texture coordinate in object definition");
 
-		if (vdefs[i].n_idx > -1 && vdefs[i].n_idx < cache.normals.size())
+		if (vdefs[i].n_idx > -1 && vdefs[i].n_idx < static_cast<int>(cache.normals.size()))
 			vert.normal = cache.normals[vdefs[i].n_idx];
 		else
 			throw std::exception("Missing normal in object definition");
@@ -359,10 +362,114 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 
 void OBJLoader::recalculateNormals(OBJMesh & mesh)
 {
+	for (size_t i = 0; i < mesh.vertices.size(); i++) //initialize all vertex normals with nullvectors
+	{
+		mesh.vertices[i].normal = glm::vec3(0.0f, 0.0f, 0.0f);
+	}
+
+	for (size_t i = 0; i < mesh.indices.size(); i += 3)
+	{
+		glm::vec3 v1 = mesh.vertices[mesh.indices[i]].position;
+		glm::vec3 v2 = mesh.vertices[mesh.indices[i + 1]].position;
+		glm::vec3 v3 = mesh.vertices[mesh.indices[i + 2]].position;
+
+		//counter clockwise winding
+		glm::vec3 edge1 = v2 - v1;
+		glm::vec3 edge2 = v3 - v1;
+
+		glm::vec3 normal = glm::cross(edge1, edge2);
+
+		//for each vertex all corresponing normals are added. The result is a non unit length vector wich is the average direction of all assigned normals.
+		mesh.vertices[mesh.indices[i]].normal += normal;
+		mesh.vertices[mesh.indices[i + 1]].normal += normal;
+		mesh.vertices[mesh.indices[i + 2]].normal += normal;
+	}
+
+	for (size_t i = 0; i < mesh.vertices.size(); i++)	//normalize all normals calculated in the previous step
+	{
+		mesh.vertices[i].normal = glm::normalize(mesh.vertices[i].normal);
+	}
+
+	mesh.hasNormals = true;
 }
 
 void OBJLoader::recalculateTangents(OBJMesh & mesh)
 {
+	if (mesh.hasUVs)
+	{
+		//initialize tangents and bitangents with nullvecs
+		for (size_t i = 0; i < mesh.vertices.size(); i++)
+		{
+			mesh.vertices[i].tangent = glm::vec3(0.0f, 0.0f, 0.0f);
+		}
+
+		float det;
+		glm::vec3 tangent;
+		glm::vec3 normal;
+
+		//calculate and average tangents and bitangents just as we did when calculating the normals
+		for (size_t i = 0; i < mesh.indices.size(); i += 3)
+		{
+			//3 vertices of a triangle
+			glm::vec3 v1 = mesh.vertices[mesh.indices[i]].position;
+			glm::vec3 v2 = mesh.vertices[mesh.indices[i + 1]].position;
+			glm::vec3 v3 = mesh.vertices[mesh.indices[i + 2]].position;
+
+			//uvs
+			glm::vec2 uv1 = mesh.vertices[mesh.indices[i]].uv;
+			glm::vec2 uv2 = mesh.vertices[mesh.indices[i + 1]].uv;
+			glm::vec2 uv3 = mesh.vertices[mesh.indices[i + 2]].uv;
+
+			//calculate edges in counter clockwise winding order
+			glm::vec3 edge1 = v2 - v1;
+			glm::vec3 edge2 = v3 - v1;
+
+			//deltaus and deltavs
+			glm::vec2 duv1 = uv2 - uv1;
+			glm::vec2 duv2 = uv3 - uv1;
+
+			det = duv1.x * duv2.y - duv2.x * duv1.y;
+
+			if (fabs(det) < 1e-6f)		//if delta stuff is close to nothing ignore it
+			{
+				tangent = glm::vec3(1.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				det = 1.0f / det;
+
+				tangent.x = det * (duv2.y * edge1.x - duv1.y * edge2.x);
+				tangent.y = det * (duv2.y * edge1.y - duv1.y * edge2.y);
+				tangent.z = det * (duv2.y * edge1.z - duv1.y * edge2.z);
+			}
+
+			mesh.vertices[mesh.indices[i]].tangent += tangent;
+			mesh.vertices[mesh.indices[i + 1]].tangent += tangent;
+			mesh.vertices[mesh.indices[i + 2]].tangent += tangent;
+		}
+
+		//orthogonalize and normalize tangents
+		for (size_t i = 0; i < mesh.vertices.size(); i++)
+		{
+			//normalize the stuff from before
+			mesh.vertices[i].normal = glm::normalize(mesh.vertices[i].normal);
+			mesh.vertices[i].tangent = glm::normalize(mesh.vertices[i].tangent);
+
+			//gram schmidt reorthogonalize normal-tangent system
+			mesh.vertices[i].tangent = glm::normalize(mesh.vertices[i].tangent - (glm::dot(mesh.vertices[i].normal, mesh.vertices[i].tangent) * mesh.vertices[i].normal));
+		}
+		mesh.hasTangents = true;
+	}
+}
+
+void OBJLoader::reverseWinding(OBJMesh & mesh)
+{
+	for (size_t i = 0; i < mesh.indices.size(); i += 3)
+	{
+		Index tmp = mesh.indices[i + 1];
+		mesh.indices[i + 1] = mesh.indices[i + 2];
+		mesh.indices[i + 2] = tmp;
+	}
 }
 
 bool istreamhelper::peekString(std::istream& stream, std::string& out)

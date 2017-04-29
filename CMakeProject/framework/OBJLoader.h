@@ -153,7 +153,7 @@ private:
 	~OBJLoader();
 
 public:
-	static OBJResult loadOBJ(const std::string& objpath);
+	static OBJResult loadOBJ(const std::string& objpath, bool calcnormals = false, bool calctangents = false);
 
 	class DataCache
 	{
@@ -206,7 +206,7 @@ public:
 private:
 	//parsing helpers
 	//o flag
-	static OBJObject parseObject(std::ifstream& stream);	
+	static OBJObject parseObject(std::ifstream& stream, bool calcnormals = false, bool calctangents = false);
 	//v per o
 	static glm::vec3 parsePosition(std::ifstream& stream);
 	//vn per o
@@ -216,7 +216,7 @@ private:
 	//=> create raw v, vn, vt cache
 
 	//parse f flags and call parseFace
-	static OBJMesh parseMesh(DataCache& cache ,std::ifstream& stream);
+	static OBJMesh parseMesh(DataCache& cache ,std::ifstream& stream, bool calcnormals = false, bool calctangents = false);
 
 	//parse face and generate vertices and indices for the mesh
 	static Face parseFace(std::ifstream& stream);
@@ -233,6 +233,7 @@ public:
 	//post processing
 	static void recalculateNormals(OBJMesh& mesh);
 	static void recalculateTangents(OBJMesh& mesh);
+	static void reverseWinding(OBJMesh& mesh);
 };
 
 
