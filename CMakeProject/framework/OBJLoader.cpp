@@ -311,11 +311,10 @@ OBJLoader::VertexDef OBJLoader::parseVertex(const std::string& vstring)
 			}
 		}
 
-		VertexDef vert = {
-			(att[0].length() > 0 ? std::stoi(att[0]) - 1 : -1),
-			(att[1].length() > 0 ? std::stoi(att[1]) - 1 : -1),
-			(att[2].length() > 0 ? std::stoi(att[2]) - 1 : -1)
-		};
+		VertexDef vert;
+		vert.p_idx = (att[0].length() > 0 ? std::stoi(att[0]) - 1 : -1);
+		vert.uv_idx = (att[1].length() > 0 ? std::stoi(att[1]) - 1 : -1);
+		vert.n_idx = (att[2].length() > 0 ? std::stoi(att[2]) - 1 : -1);
 		return vert;
 	}
 	catch (std::exception ex)
