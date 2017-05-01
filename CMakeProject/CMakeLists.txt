@@ -60,7 +60,9 @@ endif(TARGET uninstall)
 # ------------------------------------------------ GLEW ----------------------------------------------------
 
 #problematic glew thing
-set(GLEW_SOURCE_ONLY OFF CACHE BOOL "Include GLEW as source only")
+set(GLEW_SOURCE_ONLY ON CACHE BOOL "Include GLEW as source only")
+
+set(BUILD_UTILS OFF CACHE BOOL "" FORCE)
 
 #glew config stuff
 if(NOT GLEW_SOURCE_ONLY)
