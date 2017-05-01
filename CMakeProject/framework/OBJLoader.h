@@ -218,9 +218,12 @@ public:
 	{
 	public:
 		//if -1: undefined
-		int p_idx = -1;
-		int uv_idx = -1;
-		int n_idx = -1;
+		Index p_idx = 0;
+		bool p_defined = false;
+		Index uv_idx = 0;
+		bool uv_defined = false;
+		Index n_idx = 0;
+		bool n_defined = false;
 
 		class hash
 		{
