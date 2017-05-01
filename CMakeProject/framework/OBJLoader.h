@@ -1,7 +1,8 @@
 #ifndef _OBJ_LOADER_
 #define _OBJ_LOADER_
 
-#include "libheaders.h"
+#include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -15,6 +16,7 @@ class istreamhelper
 {
 public:
 	static bool peekString(std::istream& stream, std::string& out);
+	static bool consumeString(std::istream& stream);
 	template <typename T>
 	static bool peek(std::istream& stream, T& out)
 	{

@@ -53,12 +53,12 @@ OBJObject OBJLoader::parseObject(DataCache& cache, std::ifstream & stream, bool 
 		std::string command;
 
 		//get object name
-		if (!(stream >> command))
+		if (!istreamhelper::peekString(stream, command))
 			throw std::exception("Error parsing object.");
 
 		if (command == "o")
 		{
-			if (!(stream >> object.name))
+			if (!(stream >> command >> object.name))
 				throw std::exception("Error parsing object name.");
 		}
 		else
@@ -177,7 +177,7 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream, bool cal
 
 		//later create actual vertices out of these and put them into the mesh
 		std::vector<VertexDef> meshverts; //for tracking order of insertion		
-		std::vector<Index> meshindices;	//vertex index of one of the vertex defs above
+		std::vector<Index> meshindices;	//Vertex index of one of the Vertex defs above
 
 		std::string command;
 		if (!(istreamhelper::peekString(stream, command)))
@@ -206,13 +206,13 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream, bool cal
 				//process face data and build mesh
 				for (int i = 0; i < 3; i++)
 				{
-					//add vertexdefs and indices
+					//add Vertexdefs and indices
 					auto it = meshvertset.find(face.verts[i]);
-					if (it != meshvertset.end())	//if vertex def exists already, just get the index and push it onto index array
+					if (it != meshvertset.end())	//if Vertex def exists already, just get the index and push it onto index array
 					{
 						meshindices.push_back(static_cast<Index>(it->second));
 					}
-					else //if not, push a index pointing to the last pushed vertex def, push vertex def and insert it into the set
+					else //if not, push a index pointing to the last pushed Vertex def, push Vertex def and insert it into the set
 					{
 						meshindices.push_back(static_cast<Index>(meshverts.size()));
 						meshverts.push_back(face.verts[i]);
@@ -228,6 +228,19 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream, bool cal
 				if (calctangents)
 					recalculateTangents(mesh);
 				return mesh;
+			}
+			//new vertex data => no objects or mesh groups are present. simply put the new data into cache
+			else if (command == "v")			//position
+			{
+				cache.positions.push_back(parsePosition(stream));
+			}
+			else if (command == "vt")	//uv
+			{
+				cache.uvs.push_back(parseUV(stream));
+			}
+			else if (command == "vn")	//normal
+			{
+				cache.normals.push_back(parseNormal(stream));
 			}
 			else
 			{
@@ -307,7 +320,7 @@ OBJLoader::VertexDef OBJLoader::parseVertex(const std::string& vstring)
 			}
 			else
 			{
-				throw std::exception("Error parsing vertex.");
+				throw std::exception("Error parsing Vertex.");
 			}
 		}
 
@@ -331,7 +344,7 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 	try
 	{
 		//assemble the mesh from the collected indices
-		//create vertex from cache data
+		//create Vertex from cache data
 		bool hasverts = true;
 		bool hasuvs = true;
 		bool hasnormals = true;
@@ -392,7 +405,7 @@ void OBJLoader::recalculateNormals(OBJMesh & mesh)
 {
 	try
 	{
-		for (size_t i = 0; i < mesh.vertices.size(); i++) //initialize all vertex normals with nullvectors
+		for (size_t i = 0; i < mesh.vertices.size(); i++) //initialize all Vertex normals with nullvectors
 		{
 			mesh.vertices[i].normal = glm::vec3(0.0f, 0.0f, 0.0f);
 		}
@@ -409,7 +422,7 @@ void OBJLoader::recalculateNormals(OBJMesh & mesh)
 
 			glm::vec3 normal = glm::cross(edge1, edge2);
 
-			//for each vertex all corresponing normals are added. The result is a non unit length vector wich is the average direction of all assigned normals.
+			//for each Vertex all corresponing normals are added. The result is a non unit length vector wich is the average direction of all assigned normals.
 			mesh.vertices[mesh.indices[i]].normal += normal;
 			mesh.vertices[mesh.indices[i + 1]].normal += normal;
 			mesh.vertices[mesh.indices[i + 2]].normal += normal;
@@ -541,6 +554,22 @@ bool istreamhelper::peekString(std::istream& stream, std::string& out)
 				stream.seekg(spos);
 			return false;
 		}
+	}
+	catch (const std::exception& ex)
+	{
+		throw ex;
+	}
+}
+
+bool istreamhelper::consumeString(std::istream& stream)
+{
+	try
+	{
+		std::string black_hole;
+		if (stream >> black_hole)
+			return true;
+		else
+			return false;
 	}
 	catch (const std::exception& ex)
 	{
