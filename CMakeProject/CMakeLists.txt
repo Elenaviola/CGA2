@@ -127,12 +127,16 @@ list(APPEND LIB_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm-0.9.8.4/glm" "${C
 # ---------------------------------------------- SOIL ---------------------------------------------------------
 
 if(INCLUDE_SOIL_LIB)
-	find_library(SOIL_LIBRARY NAMES libSOIL PATHS "${CMAKE_CURRENT_SOURCE_DIR}/libs/soil/lib" NO_DEFAULT_PATH)
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/libs/soil")	
 	if(SOIL_LIBRARY)
-		list(APPEND LIB_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/libs/soil/include")
-		list(APPEND LIB_LINKS ${SOIL_LIBRARY})
+		if(TARGET ${SOIL_LIBRARY})
+			list(APPEND LIB_INCLUDES ${SOIL_INCLUDES})
+			list(APPEND LIB_LINKS ${SOIL_LIBRARY})
+			list(APPEND TARGETS ${SOIL_LIBRARY})
+			set_target_properties(${SOIL_LIBRARY} PROPERTIES FOLDER libs/SOIL)
+		endif()
 	else()
-		message(FATAL_ERROR "SOIL not found")
+		message(FATAL_ERROR "SOIL could not be included.")
 	endif()
 endif()
 
