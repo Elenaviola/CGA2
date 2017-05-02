@@ -47,6 +47,17 @@ public:
 };
 
 //------------------------------ Data Structures to hold the result ---------------------------
+class OBJException : public std::logic_error
+{
+public:
+	OBJException() : std::logic_error("unkown exception")
+	{
+	};
+	OBJException(const char* msg) : std::logic_error(msg)
+	{
+	}
+};
+
 struct Vertex
 {
 	glm::vec3 position;

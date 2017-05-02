@@ -54,12 +54,12 @@ OBJObject OBJLoader::parseObject(DataCache& cache, std::ifstream & stream, bool 
 
 		//get object name
 		if (!istreamhelper::peekString(stream, command))
-			throw std::exception("Error parsing object.");
+			throw OBJException("Error parsing object.");
 
 		if (command == "o")
 		{
 			if (!(stream >> command >> object.name))
-				throw std::exception("Error parsing object name.");
+				throw OBJException("Error parsing object name.");
 		}
 		else
 		{
@@ -105,7 +105,7 @@ OBJObject OBJLoader::parseObject(DataCache& cache, std::ifstream & stream, bool 
 		}
 		else
 		{
-			throw std::exception("Error parsing object. Read failed before end of file.");
+			throw OBJException("Error parsing object. Read failed before end of file.");
 		}
 	}
 	catch (const std::exception& ex)
@@ -122,7 +122,7 @@ glm::vec3 OBJLoader::parsePosition(std::ifstream & stream)
 		glm::vec3 pos;
 		if (!(stream >> command >> pos.x >> pos.y >> pos.z) || command != "v")
 		{
-			throw std::exception("Error parsing v command.");
+			throw OBJException("Error parsing v command.");
 		}
 		return pos;
 	}
@@ -140,7 +140,7 @@ glm::vec3 OBJLoader::parseNormal(std::ifstream & stream)
 		glm::vec3 normal;
 		if (!(stream >> command >> normal.x >> normal.y >> normal.z) || command != "vn")
 		{
-			throw std::exception("Error parsing vn command.");
+			throw OBJException("Error parsing vn command.");
 		}
 		return normal;
 	}
@@ -158,7 +158,7 @@ glm::vec2 OBJLoader::parseUV(std::ifstream & stream)
 		glm::vec2 uv;
 		if (!(stream >> command >> uv.x >> uv.y) || command != "vt")
 		{
-			throw std::exception("Error parsing vt command.");
+			throw OBJException("Error parsing vt command.");
 		}
 		return uv;
 	}
@@ -182,14 +182,14 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream, bool cal
 		std::string command;
 		if (!(istreamhelper::peekString(stream, command)))
 		{
-			throw std::exception("Error parsing mesh.");
+			throw OBJException("Error parsing mesh.");
 		}
 
 		if (command == "g") //if we have a grouped mesh extract its name first
 		{
 			if (!(stream >> command >> mesh.name))
 			{
-				throw std::exception("Error parsing mesh.");
+				throw OBJException("Error parsing mesh.");
 			}
 		}
 		else
@@ -258,7 +258,7 @@ OBJMesh OBJLoader::parseMesh(DataCache & cache, std::ifstream & stream, bool cal
 		}
 		else
 		{
-			throw std::exception("Error parsing mesh. Read failed before end of file.");
+			throw OBJException("Error parsing mesh. Read failed before end of file.");
 		}
 	}
 	catch (const std::exception& ex)
@@ -285,12 +285,12 @@ OBJLoader::Face OBJLoader::parseFace(std::ifstream & stream)
 			}
 			else
 			{
-				throw std::exception("Error parsing face");
+				throw OBJException("Error parsing face");
 			}
 		}
 		else
 		{
-			throw std::exception("Error parsing face");
+			throw OBJException("Error parsing face");
 		}
 	}
 	catch (const std::exception& ex)
@@ -320,7 +320,7 @@ OBJLoader::VertexDef OBJLoader::parseVertex(const std::string& vstring)
 			}
 			else
 			{
-				throw std::exception("Error parsing Vertex.");
+				throw OBJException("Error parsing Vertex.");
 			}
 		}
 
@@ -357,7 +357,7 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 				if(vdefs[i].p_idx < static_cast<Index>(cache.positions.size()))
 					vert.position = cache.positions[vdefs[i].p_idx];
 				else
-					throw std::exception("Missing position in object definition");
+					throw OBJException("Missing position in object definition");
 			}
 			else
 			{
@@ -369,7 +369,7 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 				if (vdefs[i].uv_idx < static_cast<Index>(cache.uvs.size()))
 					vert.uv = cache.uvs[vdefs[i].uv_idx];
 				else
-					throw std::exception("Missing texture coordinate in object definition");
+					throw OBJException("Missing texture coordinate in object definition");
 			}
 			else
 			{
@@ -381,7 +381,7 @@ void OBJLoader::fillMesh(OBJMesh & mesh, DataCache & cache, std::vector<VertexDe
 				if (vdefs[i].n_idx < static_cast<Index>(cache.normals.size()))
 					vert.normal = cache.normals[vdefs[i].n_idx];
 				else
-					throw std::exception("Missing normal in object definition");
+					throw OBJException("Missing normal in object definition");
 			}
 			else
 			{

@@ -13,7 +13,7 @@ GameWindow::GameWindow(const GLint sizex, const GLint sizey, bool fullscreen, bo
 	this->m_samples = msaasamples;
 	this->fullscreen = fullscreen;
 	this->vsync = vsync;
-	this->m_updatefrequency = updatefrequency;
+	this->m_updatefrequency = static_cast<GLfloat>(updatefrequency);
 	if (!this->initialize())
 		throw "Initiatization error";
 }
