@@ -70,4 +70,5 @@ void Game::onMouseScroll(double xscroll, double yscroll)
 //Window resize events
 void Game::onFrameBufferResize(int width, int height)
 {
+	
 }

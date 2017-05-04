@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 #include "Game.h"
 
 using namespace std;
@@ -7,6 +6,15 @@ using namespace std;
 
 int main(void)
 {
-	Game mg;
-	mg.run();	
+	try
+	{
+		Game mg;
+		mg.run();
+	}
+	catch(...)
+	{
+		std::cout << "Fehler: Das Fenster konnte nicht initialisiert werden." << std::endl;
+	}
+
+	return 1;
 }

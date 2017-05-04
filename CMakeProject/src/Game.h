@@ -1,5 +1,5 @@
-#ifndef _MAIN_GAME_
-#define _MAIN_GAME_
+#ifndef _GAME_H_
+#define _GAME_H_
 #include "GameWindow.h"
 #include "Input.h"
 #include "glerror.h"
