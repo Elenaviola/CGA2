@@ -102,7 +102,7 @@ GLvoid GameWindow::run()
 		glfwPollEvents();
 		while (timeAccumulator >= timeDelta)
 		{
-			update(timeAccumulator);
+			update(timeDelta);
 			
 			timeAccumulator -= timeDelta;
 		}
