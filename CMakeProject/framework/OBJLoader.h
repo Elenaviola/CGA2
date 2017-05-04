@@ -52,7 +52,7 @@ class OBJException : public std::logic_error
 public:
 	OBJException() : std::logic_error("unkown exception")
 	{
-	};
+	}
 	OBJException(const char* msg) : std::logic_error(msg)
 	{
 	}
