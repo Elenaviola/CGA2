@@ -90,6 +90,8 @@ GLboolean GameWindow::initialize()
 
 GLvoid GameWindow::run()
 {
+	if(m_window == nullptr)
+		throw std::logic_error("Run failed. GameWindow is not initialized.\n");
 	init();
 	GLdouble timeDelta = 1.0f / m_updatefrequency;
 	GLdouble timeAccumulator = 0;
@@ -129,5 +131,6 @@ GLvoid GameWindow::run()
 
 GLvoid GameWindow::quit()
 {
-	glfwSetWindowShouldClose(m_window, GL_TRUE);
+	if(m_window != nullptr)
+		glfwSetWindowShouldClose(m_window, GL_TRUE);
 }
