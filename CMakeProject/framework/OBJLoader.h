@@ -71,7 +71,12 @@ typedef GLuint Index;
 class OBJMesh
 {
 public:
-	OBJMesh() {}
+	OBJMesh() : 
+		hasPositions(false),
+		hasUVs(false),
+		hasNormals(false),
+		hasTangents(false)
+	{}
 	OBJMesh(const OBJMesh& other) :
 		name(other.name),
 		hasPositions(other.hasPositions),
