@@ -126,7 +126,7 @@ GLvoid GameWindow::run()
 	}
 	shutdown();
 	glfwDestroyWindow(m_window);
-	glfwTerminate();
+	m_window = nullptr;
 }
 
 GLvoid GameWindow::quit()
