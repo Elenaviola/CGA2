@@ -1,9 +1,7 @@
 #ifndef _GAME_H_
 #define _GAME_H_
+
 #include "GameWindow.h"
-#include "Input.h"
-#include "glerror.h"
-#include "libheaders.h"
 
 class Game : public GameWindow
 {

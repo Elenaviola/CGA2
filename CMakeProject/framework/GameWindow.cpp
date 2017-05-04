@@ -15,7 +15,7 @@ GameWindow::GameWindow(const GLint sizex, const GLint sizey, bool fullscreen, bo
 	this->vsync = vsync;
 	this->m_updatefrequency = static_cast<GLfloat>(updatefrequency);
 	if (!this->initialize())
-		throw "Initiatization error";
+		throw std::invalid_argument("Error: Window initialization failed.");
 }
 
 
@@ -30,8 +30,8 @@ GLboolean GameWindow::initialize()
 
 	if (!glfwInit())
 	{
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		getchar();
+		std::cerr << "Failed to initialize GLFW\n";
+		//getchar();
 		return false;
 	}
 
@@ -44,8 +44,8 @@ GLboolean GameWindow::initialize()
 	// Open a window and create its OpenGL context
 	this->m_window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(), (fullscreen ? glfwGetPrimaryMonitor() : NULL), NULL);
 	if (this->m_window == NULL){
-		fprintf(stderr, "Failed to open GLFW window. Please check if your system supports the OpenGL version you passed.\n");
-		getchar();
+		std::cerr << "Failed to open GLFW window. OpenGL Version " << m_cvmaj << "." << m_cvmin << " is not supported on your system.\n";
+		//getchar();
 		glfwTerminate();
 		return false;
 	}
@@ -55,15 +55,15 @@ GLboolean GameWindow::initialize()
 	// Initialize GLEW
 	GLenum err = glewInit();
 	if (err != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-		getchar();
+		std::cerr << "Failed to initialize GLEW\n";
+		std::cerr << "Error: " << glewGetErrorString(err) << "\n";
+		//getchar();
 		glfwTerminate();
 		return false;
 	}
 
-	err = glGetError();
-	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+	err = glGetError(); //dummy readout
+	std::cerr << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << "\nOpenGL Version " << m_cvmaj << "." << m_cvmin << " context successfully created.\nExtensions successfully loaded.\n";
 
 	//Setup input instance
 	input.reset(new Input(m_window));

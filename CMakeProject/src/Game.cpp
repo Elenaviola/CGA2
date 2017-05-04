@@ -6,8 +6,8 @@ GameWindow(	800,				//width
 			600,				//height
 			false,				//fullscreen
 			true,				//vsync
-			4,					//OpenGL Version Major
-			3,					//OpenGL Version Minor	=> Here the OpenGL Version is 4.3
+			3,					//OpenGL Version Major
+			3,					//OpenGL Version Minor	=> Here the OpenGL Version is 3.3
 			"Testgame")			//Tile of the window
 {
 

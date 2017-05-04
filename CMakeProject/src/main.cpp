@@ -1,9 +1,6 @@
 #include <iostream>
 #include "Game.h"
 
-using namespace std;
-
-
 int main(void)
 {
 	try
@@ -11,9 +8,10 @@ int main(void)
 		Game mg;
 		mg.run();
 	}
-	catch(...)
+	catch(const std::exception& ex)
 	{
-		std::cout << "Fehler: Das Fenster konnte nicht initialisiert werden." << std::endl;
+		std::cout << ex.what() << " Druecke eine Taste zum beenden." << std::endl;
+		getchar();
 	}
 
 	return 1;
