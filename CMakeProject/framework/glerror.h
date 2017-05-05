@@ -7,7 +7,7 @@
 #include <libheaders.h>
 #include <fw_config.h>
 
-#ifdef GLDEBUG
+#ifdef CGA2_DEBUG
 #define GLERR printglerror(__FILE__, __LINE__);
 #else
 #define GLERR
