@@ -55,7 +55,7 @@ private:
 	GLint m_cvmaj;
 	GLint m_cvmin;
 	GLint m_samples;
-	GLfloat m_updatefrequency;
+	GLdouble m_updatefrequency;
 	GLFWwindow* m_window;
 	static GameWindow* windowHandlerInstance;
 
