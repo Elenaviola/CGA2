@@ -23,8 +23,8 @@ public:
 	GLvoid quit();	//stops the game loop and closes the application
 
 	//override these in your application
-	virtual GLvoid update(GLdouble time) {};	//physics and logic updates here
-	virtual GLvoid render(GLdouble time) {};	//rendering a frame goes here
+	virtual GLvoid update(GLdouble dtime) {};	//physics and logic updates here
+	virtual GLvoid render(GLdouble dtime) {};	//rendering a frame goes here
 	virtual GLvoid init() {};					//initialization tasks
 	virtual GLvoid shutdown() {};				//clean everything up
 
