@@ -12,8 +12,8 @@ public:
 	void init() override;
 	void shutdown() override;
 
-	void update(GLdouble time) override;
-	void render(GLdouble time) override;
+	void update(GLdouble dtime) override;
+	void render(GLdouble dtime) override;
 
 	void onKey(Key key, Action action, Modifier modifier) override;
 	void onMouseMove(MousePosition mouseposition) override;

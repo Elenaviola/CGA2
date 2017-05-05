@@ -31,13 +31,13 @@ void Game::shutdown()
 }
 
 //Update Game Logic here
-void Game::update(GLdouble time)
+void Game::update(GLdouble dtime)
 {
 
 }
 
 //Render a frame
-void Game::render(GLdouble time)
+void Game::render(GLdouble dtime)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 }

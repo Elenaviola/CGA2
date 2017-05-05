@@ -1,8 +1,8 @@
 #ifndef _GAME_WINDOW_H_
 #define _GAME_WINDOW_H_
-#include "libheaders.h"
-#include "glerror.h"
-#include "Input.h"
+#include <libheaders.h>
+#include <glerror.h>
+#include <Input.h>
 #include <memory>
 
 

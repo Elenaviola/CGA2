@@ -10,8 +10,8 @@ int main(void)
 	}
 	catch(const std::exception& ex)
 	{
-		std::cout << ex.what() << " Druecke eine Taste zum beenden." << std::endl;
-		getchar();
+		std::cout << ex.what() << "\nDruecke eine Taste zum beenden." << std::endl;
+		std::getchar();
 	}
 
 	return 1;

@@ -6,7 +6,7 @@ void printglerror(const char* file, int line)
 	if (err != GL_NO_ERROR)
 	{
 		std::stringstream messagestream;
-		messagestream << "An OpenGL error has occured at file: \"" << file << "\", line: " << line << ":\n";
+		messagestream << "An OpenGL error occured at file: \"" << file << "\", line: " << line << ":\n";
 		
 		switch (err)
 		{
@@ -37,21 +37,32 @@ void printglerror(const char* file, int line)
 		default:
 			messagestream << "unknown gl error";
 		}
-		std::cout  << messagestream.str() << std::endl;
+		std::cerr  << messagestream.str() << std::endl;
+		if (HOLD_ON_GL_ERROR)
+			std::getchar();
 
 		if (LOG_GL_ERRORS)
 		{
-			std::fstream fs;
-			fs.open("glerrorlog.txt", std::ios_base::out | std::ios_base::app);
-			if (fs.is_open())
+			try
 			{
-				fs << messagestream.str() << std::endl;
-				fs.close();
+				std::fstream fs;
+				fs.open("glerrorlog.txt", std::ios_base::out | std::ios_base::app);
+				if (fs.is_open())
+				{
+					fs << messagestream.str() << std::endl;
+					fs.close();
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				std::string ioerr = "Error: Unable to write glerror.txt : ";
+				ioerr.append(ex.what());
+				throw std::runtime_error(ioerr.c_str());
 			}
 		}
 
-		if (EXIT_ON_GL_ERROR)
-			exit(EXIT_FAILURE);
+		if (THROW_ON_GL_ERROR)
+			throw std::logic_error(messagestream.str());
 	}
 }
 
@@ -61,7 +72,7 @@ bool checkglerror_(const char* file, int line)
 	if (err != GL_NO_ERROR)
 	{
 		std::stringstream messagestream;
-		messagestream << "An OpenGL error has occured at file: \"" << file << "\", line: " << line << ":\n";
+		messagestream << "An OpenGL error occured at file: \"" << file << "\", line: " << line << ":\n";
 		switch (err)
 		{
 		case GL_INVALID_ENUM:
@@ -91,16 +102,25 @@ bool checkglerror_(const char* file, int line)
 		default:
 			messagestream << "unknown gl error";
 		}
-		std::cout << messagestream.str() << std::endl;
+		std::cerr << messagestream.str() << std::endl;
 
 		if (LOG_GL_ERRORS)
 		{
-			std::fstream fs;
-			fs.open("glerrorlog.txt", std::ios_base::out | std::ios_base::app);
-			if (fs.is_open())
+			try
 			{
-				fs << messagestream.str() << std::endl;
-				fs.close();
+				std::fstream fs;
+				fs.open("glerrorlog.txt", std::ios_base::out | std::ios_base::app);
+				if (fs.is_open())
+				{
+					fs << messagestream.str() << std::endl;
+					fs.close();
+				}
+			}
+			catch (const std::exception& ex)
+			{
+				std::string ioerr = "Error: Unable to write glerror.txt : ";
+				ioerr.append(ex.what());
+				throw std::runtime_error(ioerr.c_str());
 			}
 		}
 

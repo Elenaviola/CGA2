@@ -4,12 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "libheaders.h"
-
-//Debug settings for glerror.h
-#define EXIT_ON_GL_ERROR 0
-#define LOG_GL_ERRORS 1
-#define GLDEBUG
+#include <libheaders.h>
+#include <fw_config.h>
 
 #ifdef GLDEBUG
 #define GLERR printglerror(__FILE__, __LINE__);
