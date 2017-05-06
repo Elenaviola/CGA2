@@ -1,7 +1,7 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "GameWindow.h"
+#include <GameWindow.h>
 
 class Game : public GameWindow
 {
