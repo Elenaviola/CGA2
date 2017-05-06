@@ -22,7 +22,6 @@ set(LIB_SOURCE_ONLY_FILES "")
 # optional lib includes
 
 set(INCLUDE_SOIL_LIB ON CACHE BOOL "Include SOIL library")
-set(INCLUDE_ASSIMP_LIB OFF CAHCE BOOL "Include AssImp library")
 
 # ------------------------------------------------- GLFW ----------------------------------------------------
 
