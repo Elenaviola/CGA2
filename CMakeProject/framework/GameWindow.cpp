@@ -21,6 +21,11 @@ GameWindow::GameWindow(const GLint sizex, const GLint sizey, bool fullscreen, bo
 
 GameWindow::~GameWindow()
 {
+	if(m_window != nullptr)
+	{
+		glfwDestroyWindow(m_window);
+		m_window = nullptr;
+	}
 	glfwTerminate();
 }
 
@@ -125,8 +130,6 @@ GLvoid GameWindow::run()
 		timeAccumulator2 += glfwGetTime() - startTime;
 	}
 	shutdown();
-	glfwDestroyWindow(m_window);
-	m_window = nullptr;
 }
 
 GLvoid GameWindow::quit()
