@@ -62,10 +62,14 @@ private:
 	//glfw callback wrappers
 	static void wrz_callback(GLFWwindow* window, int width, int height)
 	{
+		windowHandlerInstance->windowWidth = width;
+		windowHandlerInstance->windowHeight = height;
 		windowHandlerInstance->onWindowResize(width, height);
 	}
 	static void frz_callback(GLFWwindow* window, int width, int height)
 	{
+		windowHandlerInstance->windowWidth = width;
+		windowHandlerInstance->windowHeight = height;
 		windowHandlerInstance->onFrameBufferResize(width, height);
 	}
 };
